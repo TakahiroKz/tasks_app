@@ -38,16 +38,14 @@ A modern, asynchronous RESTful API built with FastAPI for managing tasks. This a
    cd tasks_app
    ```
 
-2. **Create a virtual environment:**
+2. **Install Poetry (if not already installed):**
    ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   curl -sSL https://install.python-poetry.org | python3 -
    ```
 
 3. **Install dependencies:**
    ```bash
-   pip install -r requirements/base.txt
-   pip install -r requirements/dev.txt  # For development
+   poetry install
    ```
 
 4. **Set up environment variables:**
@@ -58,12 +56,12 @@ A modern, asynchronous RESTful API built with FastAPI for managing tasks. This a
 
 5. **Run database migrations:**
    ```bash
-   alembic upgrade head
+   poetry run alembic upgrade head
    ```
 
 6. **Start the application:**
    ```bash
-   uvicorn src.main:app --reload
+   poetry run uvicorn src.main:app --reload
    ```
 
 The API will be available at `http://localhost:8000`
@@ -196,24 +194,21 @@ The application uses async SQLAlchemy with PostgreSQL. Database sessions are man
 ### Running Tests
 
 ```bash
-# Install test dependencies
-pip install -r requirements/dev.txt
-
 # Run tests
-pytest
+poetry run pytest
 ```
 
 ### Database Migrations
 
 ```bash
 # Create a new migration
-alembic revision --autogenerate -m "Migration message"
+poetry run alembic revision --autogenerate -m "Migration message"
 
 # Apply migrations
-alembic upgrade head
+poetry run alembic upgrade head
 
 # Rollback
-alembic downgrade -1
+poetry run alembic downgrade -1
 ```
 
 ### API Documentation
