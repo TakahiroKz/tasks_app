@@ -232,4 +232,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Built with [FastAPI](https://fastapi.tiangolo.com/)
 - Database ORM with [SQLAlchemy](https://www.sqlalchemy.org/)
 - Data validation with [Pydantic](https://pydantic-docs.helpmanual.io/)</content>
-<parameter name="filePath">c:\Users\gerau\Documents\Leo\Dev\Python\Proyectos\tasks_app\README.md
