@@ -5,10 +5,11 @@ from .models import Task
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.tasks.dependencies import get_db
 from src.tasks.models import Task as TaskModel
-from src.tasks.schemas import Task_create, Task_response
+from src.tasks.schemas import Task_create, Task_response, TaskFilterParams
 from src.tasks.services import TaskService
 from src.paginador.core import pagination_params
 from src.paginador.schemas import PaginatedResponse
+
 
 tasks_router = APIRouter()
 
@@ -23,9 +24,9 @@ async def get_task(task_id: int, db:AsyncSession = Depends(get_db)):
     return await service.get_task(task_id)
 
 @tasks_router.get("/tasks", response_model=PaginatedResponse[Task_response], status_code=status.HTTP_200_OK)
-async def get_tasks(db:AsyncSession = Depends(get_db), pagination = Depends(pagination_params)):
+async def get_tasks(filters: TaskFilterParams = Depends(),db:AsyncSession = Depends(get_db), pagination = Depends(pagination_params)):
     service = TaskService(db)
-    return await service.get_tasks(pagination["page"], pagination["limit"])
+    return await service.get_tasks(pagination["page"], pagination["limit"], filters)
 
 @tasks_router.delete("/task/{task_id}", status_code=status.HTTP_200_OK)
 async def delete_task(task_id:int, db:AsyncSession = Depends(get_db)):

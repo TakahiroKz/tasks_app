@@ -1,12 +1,13 @@
+from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
 from sqlalchemy import select, func
+from math import ceil
 from .models import Task
-from sqlalchemy.ext.asyncio import AsyncSession
 from src.tasks.dependencies import get_db
 from src.tasks.models import Task as TaskModel
 from src.tasks.schemas import Task_create, Task_response
-from math import ceil
 from src.paginador.schemas import PaginatedResponse
+from src.tasks.filters import build_task_filters
 
 class TaskService:
     def __init__(self, db: AsyncSession):
@@ -30,14 +31,15 @@ class TaskService:
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
         
-    async def get_tasks(self, page: int, limit: int) -> PaginatedResponse[Task_response]:
+    async def get_tasks(self, page: int, limit: int, filters) -> PaginatedResponse[Task_response]:
         offset = (page - 1) * limit
+        query_filters = build_task_filters(filters)
         try:
-            count_query = select(func.count()).select_from(TaskModel)
+            count_query = (select(func.count()).select_from(TaskModel).where(*query_filters))
             total_res = await self.db.execute(count_query)
             total = total_res.scalar()
             pages = ceil(total/limit)
-            query = (select(TaskModel).offset(offset).limit(limit))
+            query = (select(TaskModel).where(*query_filters).offset(offset).limit(limit))
             result = await self.db.execute(query)
             tasks = result.scalars().all()
             return PaginatedResponse[Task_response](
