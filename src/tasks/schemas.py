@@ -11,3 +11,8 @@ class Task_response(Task_create):
     id:int
     created_at: datetime
     model_config = ConfigDict(from_attributes=True)
+
+class TaskFilterParams(BaseModel):
+    title: str | None = None
+    completed: bool | None = None
+    priority: int | None = None
