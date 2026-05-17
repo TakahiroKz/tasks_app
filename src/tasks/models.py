@@ -10,4 +10,5 @@ class Task(Base):
     title = Column(String, nullable=False)
     description = Column(String,nullable=False)
     is_completed =  Column(Boolean, default=False)
+    priority = Column(Integer, default=0)
     created_at = Column(DateTime,default=datetime.utcnow)

@@ -7,7 +7,7 @@ from src.tasks.dependencies import get_db
 from src.tasks.models import Task as TaskModel
 from src.tasks.schemas import Task_create, Task_response
 from src.paginador.schemas import PaginatedResponse
-from src.tasks.filters import build_task_filters
+from src.tasks.filters import TASK_FILTERS
 
 class TaskService:
     def __init__(self, db: AsyncSession):
@@ -16,7 +16,8 @@ class TaskService:
     async def create_task(self, task: Task_create) -> Task_response:
         new_task = TaskModel(title=task.title,
                              description=task.description,
-                             is_completed=task.is_completed)
+                             is_completed=task.is_completed,
+                             priority=task.priority)
         self.db.add(new_task)
         await self.db.commit()
         await self.db.refresh(new_task)
@@ -31,15 +32,29 @@ class TaskService:
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
         
-    async def get_tasks(self, page: int, limit: int, filters) -> PaginatedResponse[Task_response]:
+    async def get_tasks(self, page: int, limit: int, filters: dict) -> PaginatedResponse[Task_response]:
         offset = (page - 1) * limit
-        query_filters = build_task_filters(filters)
+        filters = dict(filters)
         try:
-            count_query = (select(func.count()).select_from(TaskModel).where(*query_filters))
+            count_query = (select(func.count()).select_from(TaskModel))
+            for field, value in filters.items():
+                if value is None:
+                    continue    
+                filter_func = TASK_FILTERS.get(field)
+                if filter_func:
+                    count_query = count_query.where(filter_func(value))
+
+            print(str(count_query)    )
             total_res = await self.db.execute(count_query)
             total = total_res.scalar()
             pages = ceil(total/limit)
-            query = (select(TaskModel).where(*query_filters).offset(offset).limit(limit))
+            query = (select(TaskModel).offset(offset).limit(limit))
+            for field, value in filters.items():
+                if value is None:
+                    continue
+                filter_func = TASK_FILTERS.get(field)
+                if filter_func:
+                    query = query.where(filter_func(value))
             result = await self.db.execute(query)
             tasks = result.scalars().all()
             return PaginatedResponse[Task_response](
@@ -73,6 +88,7 @@ class TaskService:
             existing_task.title = task.title
             existing_task.description = task.description
             existing_task.is_completed = task.is_completed
+            existing_task.pririty = task.priority
             await self.db.commit()
             await self.db.refresh(existing_task)
             return existing_task

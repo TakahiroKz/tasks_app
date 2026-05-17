@@ -5,6 +5,7 @@ class Task_create(BaseModel):
     title: str
     description: str
     is_completed: bool
+    priority: int
 
 
 class Task_response(Task_create):
