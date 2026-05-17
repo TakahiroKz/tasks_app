@@ -24,9 +24,9 @@ async def get_task(task_id: int, db:AsyncSession = Depends(get_db)):
     return await service.get_task(task_id)
 
 @tasks_router.get("/tasks", response_model=PaginatedResponse[Task_response], status_code=status.HTTP_200_OK)
-async def get_tasks(filters: TaskFilterParams = Depends(),db:AsyncSession = Depends(get_db), pagination = Depends(pagination_params)):
+async def get_tasks(sort_by:str="created_at", order:str = "desc", filters: TaskFilterParams = Depends(), pagination = Depends(pagination_params),db:AsyncSession = Depends(get_db)):
     service = TaskService(db)
-    return await service.get_tasks(pagination["page"], pagination["limit"], filters)
+    return await service.get_tasks(pagination["page"], pagination["limit"], filters, sort_by, order)
 
 @tasks_router.delete("/task/{task_id}", status_code=status.HTTP_200_OK)
 async def delete_task(task_id:int, db:AsyncSession = Depends(get_db)):
