@@ -17,7 +17,7 @@ from src.auth.dependencies import get_current_user
 tasks_router = APIRouter()
 
 @tasks_router.post("/tasks", response_model=Task_response, status_code=status.HTTP_201_CREATED)
-async def create_task(task:Task_create, db: AsyncSession = Depends(get_db)):
+async def create_task(task:Task_create,current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     service = TaskService(db)
     return await service.create_task(task)
 
@@ -32,12 +32,12 @@ async def get_tasks(current_user = Depends(get_current_user),sort_by:str="create
     return await service.get_tasks(pagination["page"], pagination["limit"], filters, sort_by, order)
 
 @tasks_router.delete("/task/{task_id}", status_code=status.HTTP_200_OK)
-async def delete_task(task_id:int, db:AsyncSession = Depends(get_db)):
+async def delete_task(task_id:int, current_user: User = Depends(get_current_user),db:AsyncSession = Depends(get_db)):
     service = TaskService(db)
     return await service.delete_task(task_id)
 
 @tasks_router.put("/task/{task_id}", response_model=Task_response, status_code=status.HTTP_200_OK)
-async def update_task(task_id:int, task:Task_create, db:AsyncSession = Depends(get_db)):
+async def update_task(task_id:int, task:Task_create, current_user: User = Depends(get_current_user), db:AsyncSession = Depends(get_db)):
     service = TaskService(db)
     return await service.update_task(task_id, task)
 
