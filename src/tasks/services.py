@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
 from sqlalchemy import select, func, asc, desc
 from math import ceil
+
 from .models import Task
 from src.tasks.dependencies import get_db
 from src.tasks.models import Task as TaskModel
@@ -14,26 +15,27 @@ class TaskService:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def create_task(self, task: Task_create) -> Task_response:
+    async def create_task(self, task: Task_create,current_user) -> Task_response:
         new_task = TaskModel(title=task.title,
                              description=task.description,
                              is_completed=task.is_completed,
-                             priority=task.priority)
+                             priority=task.priority,
+                             user_id=current_user.id)
         self.db.add(new_task)
         await self.db.commit()
         await self.db.refresh(new_task)
         return new_task
 
-    async def get_task(self, task_id: int) ->Task_response:
+    async def get_task(self, task_id: int, current_user) ->Task_response:
         try:
             task = await self.db.get(TaskModel, task_id)
-            if not task:
+            if not task or task.user_id != current_user.id:
                 raise HTTPException(status_code=404, detail="Task not found")
             return task
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
         
-    async def get_tasks(self, page: int, limit: int, filters: dict, sort_by:str = "created_at", order:str="desc") -> PaginatedResponse[Task_response]:
+    async def get_tasks(self, current_user,page: int, limit: int, filters: dict, sort_by:str = "created_at", order:str="desc") -> PaginatedResponse[Task_response]:
         offset = (page - 1) * limit
         filters = dict(filters)
         try:
@@ -44,6 +46,7 @@ class TaskService:
                 filter_func = TASK_FILTERS.get(field)
                 if filter_func:
                     count_query = count_query.where(filter_func(value))
+            count_query = count_query.where(TaskModel.user_id == current_user.id)
             total_res = await self.db.execute(count_query)
             total = total_res.scalar()
             pages = ceil(total/limit)
@@ -61,7 +64,7 @@ class TaskService:
                     query = query.order_by(asc(sort_column))
                 else:
                     query = query.order_by(desc(sort_column))
-                    
+            query = query.where(TaskModel.user_id == current_user.id)
             result = await self.db.execute(query)
             tasks = result.scalars().all()
             return PaginatedResponse[Task_response](

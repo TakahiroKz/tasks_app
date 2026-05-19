@@ -19,17 +19,17 @@ tasks_router = APIRouter()
 @tasks_router.post("/tasks", response_model=Task_response, status_code=status.HTTP_201_CREATED)
 async def create_task(task:Task_create,current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     service = TaskService(db)
-    return await service.create_task(task)
+    return await service.create_task(task,current_user)
 
 @tasks_router.get("/task/{task_id}", response_model=Task_response, status_code=status.HTTP_200_OK)
 async def get_task(task_id: int, current_user: User = Depends(get_current_user) ,db:AsyncSession = Depends(get_db)):
     service = TaskService(db)
-    return await service.get_task(task_id)
+    return await service.get_task(task_id,current_user)
 
 @tasks_router.get("/tasks", response_model=PaginatedResponse[Task_response], status_code=status.HTTP_200_OK)
 async def get_tasks(current_user = Depends(get_current_user),sort_by:str="created_at", order:str = "desc", filters: TaskFilterParams = Depends(), pagination = Depends(pagination_params),db:AsyncSession = Depends(get_db)):
     service = TaskService(db)
-    return await service.get_tasks(pagination["page"], pagination["limit"], filters, sort_by, order)
+    return await service.get_tasks(current_user,pagination["page"], pagination["limit"], filters, sort_by, order)
 
 @tasks_router.delete("/task/{task_id}", status_code=status.HTTP_200_OK)
 async def delete_task(task_id:int, current_user: User = Depends(get_current_user),db:AsyncSession = Depends(get_db)):

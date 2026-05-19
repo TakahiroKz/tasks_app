@@ -12,6 +12,7 @@ class Task(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     title: Mapped[str]
+    description: Mapped[str]
     is_completed: Mapped[bool] = mapped_column(default=False)
     priority: Mapped[int] = mapped_column(default=0)
     created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
