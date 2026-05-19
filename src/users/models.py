@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.database import Base
 
@@ -13,3 +13,8 @@ class User(Base):
     )
     hashed_password: Mapped[str]
     is_admin: Mapped[bool] = mapped_column(default=False)
+
+    tasks: Mapped[list["Task"]]= relationship(
+        back_populates="users",
+        cascade="all, delete-orphan"
+    )
