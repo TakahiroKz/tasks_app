@@ -7,7 +7,6 @@ class Task_create(BaseModel):
     is_completed: bool
     priority: int
 
-
 class Task_response(Task_create):
     id:int
     created_at: datetime

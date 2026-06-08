@@ -26,6 +26,7 @@ config = context.config
 # )
 
 db_url = os.getenv("PG_DATABASE_URL")
+print(db_url)
 
 if not db_url:
     raise ValueError("Database URL not found in environment variables.")
